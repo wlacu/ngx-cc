@@ -11,10 +11,17 @@ It can be used with or without angular material. Please look at the demo for mor
 
 # Components
  **Selector**: ngx-cc
+ 
  **Description**: A component used to validate the card number and show the matched card type as user start typing.
+ 
  **Selector**: ngx-cc-date
+ 
  **Description**: A component used to validate the card date and format it if valid
+ 
   **Selector**: ngx-cc-cvv
+  
  **Description**: A component used to validate the card security code.
+ 
  In order to override the **styles** on the component, you can pass a css class by using **styleClass** property on any of above component
+
  **Note:**  In order to use it without angular material, you need to set defaultStyles attribute on components.
