@@ -18,6 +18,7 @@ export class FormatDateDirective {
     const value = parseInt(eventValue, 10);
     if (!eventValue) {
       this.isUpdated = false;
+      this.control.control.setValue(eventValue);
       return;
     }
     if (!this.isUpdated && value >= 10 && value <= 12) {

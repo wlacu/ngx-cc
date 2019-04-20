@@ -26,6 +26,7 @@ import { cardIcons } from './ngx-cc.icons';
         [required]="required"
         [disabled]="disabled"
         [value]="cardNumber"
+        (blur)="updateOnTouch()"
         (input)="updateIcon($event)" />
 
         <input *ngIf="defaultStyles"
@@ -38,6 +39,7 @@ import { cardIcons } from './ngx-cc.icons';
         [disabled]="disabled"
         [value]="cardNumber"
         [ngStyle]="{'background-image': 'url(' + cardIcon + ')'}"
+        (blur)="updateOnTouch()"
         (input)="updateIcon($event)" />
         <img *ngIf="!defaultStyles" class="ngx-cc-suffix" [src]="cardIcon" />
       </div>
@@ -156,13 +158,14 @@ export class NgxCcComponent implements OnInit, OnDestroy, DoCheck, ControlValueA
   private _defaultStyles = false;
   // tslint:disable-next-line: variable-name
   private _required = false;
-  ngControl = null;
+  ngControl: NgControl = null;
   focused = false;
   errorState = false;
   cardNumber = '';
   cardIcon = cardIcons.default;
   card: CardConfig;
   onChange: any;
+  onTouched: any;
   stateChanges = new Subject<void>();
   maxNumberLimit: number;
   @HostBinding() id = `ngx-cc${NgxCcComponent.nextId}`;
@@ -210,7 +213,9 @@ export class NgxCcComponent implements OnInit, OnDestroy, DoCheck, ControlValueA
     this.onChange = fn;
   }
 
-  registerOnTouched() { }
+  registerOnTouched(fn: any) {
+    this.onTouched = fn;
+  }
 
   setDescribedByIds(ids: string[]) {
     this.describedBy = ids.join(' ');
@@ -226,6 +231,7 @@ export class NgxCcComponent implements OnInit, OnDestroy, DoCheck, ControlValueA
     const value = (event.target as HTMLInputElement).value.replace(/\s/g, '');
     let cardType = 'default';
     this.onChange(value);
+    this.ngControl.control.markAsDirty();
     this.card = this.creditCardService.getCardType(value);
     if (this.card) {
       this.maxNumberLimit = Math.max(...this.card.lengths);
@@ -233,6 +239,13 @@ export class NgxCcComponent implements OnInit, OnDestroy, DoCheck, ControlValueA
     }
     this.cardNumber = this.creditCardService.prettyCardNumber(value, cardType);
     this.cardIcon = !value ? cardIcons.default : cardIcons[cardType];
+  }
+
+  updateOnTouch() {
+    if (this.ngControl) {
+      this.onTouched(this.ngControl.control.value);
+      this.ngControl.control.markAsTouched();
+    }
   }
 
   ngOnDestroy() {

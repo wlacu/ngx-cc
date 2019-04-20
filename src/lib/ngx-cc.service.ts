@@ -12,7 +12,6 @@ export class NgxCcService {
   constructor() { }
 
   getCardType(cardNumber: number | string): CardConfig {
-    console.log(creditCardType(cardNumber));
     return creditCardType(cardNumber)[0];
   }
 

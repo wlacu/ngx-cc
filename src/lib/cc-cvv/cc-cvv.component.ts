@@ -15,7 +15,7 @@ import { CardCvvValidator } from '../validators/ngx-cc-cvv.validator';
 @Component({
   selector: 'ngx-cc-cvv',
   template: `
-    <div class="ngx-cc-cvv-container">
+    <div class="ngx-cc-cvv-container" [ngClass]="styleClass">
       <input
         ngxNumberOnly
         [ngxMaxLength]="maxCvvLength"
@@ -25,6 +25,7 @@ import { CardCvvValidator } from '../validators/ngx-cc-cvv.validator';
         [required]="required"
         [disabled]="disabled"
         [value]="cardCvv"
+        (blur)="updateOnTouch()"
         (input)="updateCvv($event)">
     </div>
   `,
@@ -122,13 +123,14 @@ export class CcCvvComponent implements OnInit, OnDestroy, DoCheck, ControlValueA
   private _defaultStyles = false;
   // tslint:disable-next-line: variable-name
   private _required = false;
-  ngControl = null;
+  ngControl: NgControl = null;
   focused = false;
   errorState = false;
   stateChanges = new Subject<void>();
 
   cardCvv = '';
   onChanges: any;
+  onTouched: any;
   maxCvvLength = 4;
 
   @HostBinding() id = `ngx-cc${CcCvvComponent.nextId}`;
@@ -175,7 +177,9 @@ export class CcCvvComponent implements OnInit, OnDestroy, DoCheck, ControlValueA
     this.onChanges = fn;
   }
 
-  registerOnTouched() { }
+  registerOnTouched(fn: any) {
+    this.onTouched = fn;
+  }
 
   setDescribedByIds(ids: string[]) {
     this.describedBy = ids.join(' ');
@@ -191,6 +195,14 @@ export class CcCvvComponent implements OnInit, OnDestroy, DoCheck, ControlValueA
     const value = (event.target as HTMLInputElement).value;
     this.cardCvv = value;
     this.onChanges(value);
+    this.ngControl.control.markAsDirty();
+  }
+
+  updateOnTouch() {
+    if (this.ngControl) {
+      this.onTouched(this.ngControl.control.value);
+      this.ngControl.control.markAsTouched();
+    }
   }
 
   ngOnDestroy() {

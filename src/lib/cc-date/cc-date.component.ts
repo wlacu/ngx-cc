@@ -16,9 +16,8 @@ import { CardExpirationValidator } from '../validators/ngx-cc-date.validator';
 @Component({
   selector: 'ngx-cc-date',
   template: `
-    <div class="ngx-cc-date-container">
+    <div class="ngx-cc-date-container" [ngClass]="styleClass">
       <input
-      class="{{styleClass}}"
       ngxNumberOnly
       ngxFormatDate
       [ngClass]="{'ngx-cc-date-input': !defaultStyles}"
@@ -27,6 +26,8 @@ import { CardExpirationValidator } from '../validators/ngx-cc-date.validator';
       [required]="required"
       [disabled]="disabled"
       [value]="cardDate"
+      (blur)="updateOnTouch()"
+      (input)="updateDate()"
       >
     </div>
   `,
@@ -125,12 +126,13 @@ export class CcDateComponent implements OnInit, OnDestroy, DoCheck, ControlValue
   private _defaultStyles = false;
   // tslint:disable-next-line: variable-name
   private _required = false;
-  ngControl = null;
+  ngControl: NgControl = null;
   focused = false;
   errorState = false;
   stateChanges = new Subject<void>();
   cardDate = '';
   onChanges: any;
+  onTouched: any;
 
   @HostBinding() id = `ngx-cc${CcDateComponent.nextId}`;
   @HostBinding('attr.aria-describedby') describedBy = '';
@@ -175,7 +177,9 @@ export class CcDateComponent implements OnInit, OnDestroy, DoCheck, ControlValue
     this.onChanges = fn;
   }
 
-  registerOnTouched() { }
+  registerOnTouched(fn: any) {
+    this.onTouched = fn;
+  }
 
   setDescribedByIds(ids: string[]) {
     this.describedBy = ids.join(' ');
@@ -187,10 +191,21 @@ export class CcDateComponent implements OnInit, OnDestroy, DoCheck, ControlValue
     }
   }
 
-  updateDate(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.onChanges(value);
-    this.stateChanges.next();
+  updateDate() {
+    if (this.ngControl) {
+      console.log(this.ngControl.control.value);
+      this.onChanges(this.ngControl.control.value);
+      this.ngControl.control.markAsDirty();
+      this.cardDate = this.ngControl.control.value;
+    }
+  }
+
+  updateOnTouch() {
+    if (this.ngControl) {
+      this.onTouched(this.ngControl.control.value);
+      this.ngControl.control.markAsTouched();
+      this.cardDate = this.ngControl.control.value;
+    }
   }
 
   ngOnDestroy() {
